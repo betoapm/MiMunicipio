@@ -1,0 +1,9 @@
+MI MUNICIPIO - ENTREGA ACTUALIZADA
+
+PUBLICACION NETLIFY: Publicar solamente archivos de la raiz del ZIP: index.html, manifest.webmanifest, sw.js, icons/. No publicar la carpeta referencia_diseno_original como sitio.
+
+CONECTADO: La interfaz principal utiliza Supabase Auth y base Mi Municipio Nuevo. La carpeta referencia_diseno_original contiene la interfaz previa y NO esta conectada a Supabase.
+
+NO ES VERSION COMPLETA NI APTA PARA OPERACION INSTITUCIONAL: faltan integracion completa del diseno original, administradores iniciales, archivos/fotos, notas y asignaciones en interfaz, duplicados, auditoria y pruebas de roles. La vista previa ilustrada es conceptual y no es captura real.
+
+La instalacion PWA depende de navegador/sistema y HTTPS.

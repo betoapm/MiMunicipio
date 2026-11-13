@@ -1,0 +1,116 @@
+<!doctype html><html lang="es"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta name="theme-color" content="#0756a6"><link rel="manifest" href="./manifest.webmanifest"><link rel="icon" href="./icons/icon-192.png"><title>Mi Municipio | Reportes ciudadanos</title><style>
+:root{font-family:system-ui,sans-serif;color:#123858;background:#f2f7fc}*{box-sizing:border-box}body{margin:0}header{background:linear-gradient(110deg,#07376a,#0765b8 75%,#009b69);color:white;padding:23px max(18px,calc((100vw - 1050px)/2))}header h1{margin:0;font-size:27px}header small{color:#cde7f5}main{max-width:1050px;margin:24px auto;padding:0 16px}.panel{background:white;border:1px solid #dce9f3;border-radius:16px;padding:23px;margin-bottom:18px;box-shadow:0 6px 24px #1a45600b}h2{margin:0 0 16px;font-size:21px}label{display:block;font-size:13px;font-weight:700;margin:12px 0 5px}input,select,textarea{width:100%;border:1px solid #caddec;border-radius:9px;padding:12px;font:inherit}textarea{min-height:110px}button{border:0;border-radius:9px;background:#075db6;color:white;padding:11px 16px;font-weight:700;cursor:pointer;margin:8px 8px 0 0}button.secondary{background:#e6f2ff;color:#075db6}button.green{background:#008e67}button:disabled{opacity:.55}.row{display:flex;gap:12px;flex-wrap:wrap}.row>*{flex:1;min-width:220px}.muted{color:#607d94;font-size:13px}.error{color:#b6253b}.success{color:#007d5b}.hidden{display:none}.report{border:1px solid #e0eaf2;border-radius:12px;padding:14px;margin:12px 0}.report h3{margin:0 0 5px}.pill{font-size:12px;background:#e7f4ff;border-radius:12px;padding:4px 8px}.note{background:#f2f7fb;border-radius:8px;padding:10px;margin:8px 0;white-space:pre-wrap}#map{height:260px;background:#e6f2ed;border-radius:12px;margin-top:12px}footer{text-align:center;color:#69839b;padding:22px}nav{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0}nav button{margin:0}a{color:#075db6}@media(max-width:600px){header{padding:18px}main{margin:14px auto}.panel{padding:17px}}
+</style><link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" /></head><body><header><h1>Mi <span style="color:#75e5ba">Municipio</span></h1><small>Reportes ciudadanos · Plataforma conectada a Supabase</small></header><main><div id="message" role="status"></div><section id="auth" class="panel"><h2>Acceso a Mi Municipio</h2><div class="row"><div><label>Correo electrónico</label><input id="email" type="email" autocomplete="email"></div><div><label>Contraseña</label><input id="password" type="password" autocomplete="current-password"></div></div><button id="login">Ingresar</button><button class="green" id="signup">Crear cuenta ciudadana</button><button class="secondary" id="reset">Restablecer contraseña</button><p class="muted">Los funcionarios deben ingresar con una cuenta creada y autorizada en Supabase. No existen contraseñas administrativas públicas.</p></section><section id="dashboard" class="hidden"><div class="panel"><div class="row" style="align-items:center"><div><h2 id="welcome">Mi cuenta</h2><div id="role" class="muted"></div></div><div style="text-align:right"><button id="logout" class="secondary">Cerrar sesión</button></div></div><nav><button id="showReports">Mis reportes</button><button id="showNew" class="green">Crear reporte</button><button id="showAnnouncements" class="secondary">Avisos</button><button id="showMap" class="secondary">Mapa</button><button id="showStats" class="secondary">Estadísticas</button><button id="showAdmin" class="secondary">Gestión</button><button id="exportCsv" class="secondary">Exportar CSV</button></nav></div><section class="panel hidden" id="newPanel"><h2>Nuevo reporte ciudadano</h2><form id="reportForm"><label>Categoría</label><select id="category" required></select><label>Descripción</label><textarea id="description" required maxlength="4000"></textarea><label>Dirección o referencia</label><input id="address" maxlength="500" placeholder="Calle, colonia, municipio"><div class="row"><div><label>Latitud</label><input id="latitude" type="number" step="any" min="-90" max="90"></div><div><label>Longitud</label><input id="longitude" type="number" step="any" min="-180" max="180"></div></div><button type="button" id="gps" class="secondary">Usar mi ubicación</button><div id="map"></div><p class="muted">Puedes marcar el punto en el mapa. Puedes adjuntar una fotografía o documento. Los archivos se almacenan de forma privada.</p><label>Fotografía o documento (máximo 10 MB)</label><input id="attachment" type="file" accept="image/*,.pdf,.doc,.docx"><div id="duplicateAlert" class="hidden report"></div><button type="submit" class="green">Enviar reporte</button></form></section><section class="panel" id="reportsPanel"><h2 id="reportsTitle">Mis reportes</h2><div id="reports" class="muted">Cargando…</div></section><section class="panel hidden" id="mapPanel"><h2>Mapa de reportes autorizados</h2><div id="allMap" style="height:400px"></div></section><section class="panel hidden" id="statsPanel"><h2>Estadísticas de reportes</h2><div id="statsContent"></div><button id="printStats">Imprimir / guardar como PDF</button></section><section class="panel hidden" id="adminPanel"><h2>Gestión institucional</h2><div id="adminContent"></div></section><section class="panel hidden" id="announcementsPanel"><h2>Avisos</h2><div id="announcements"></div></section></section><dialog id="detailDialog" style="width:min(680px,95vw);border:1px solid #dce9f3;border-radius:18px;max-height:85vh;overflow:auto"><div id="detailContent"></div></dialog><section class="panel"><h2>Consulta de folio</h2><p class="muted">Para proteger datos personales, la consulta completa requiere iniciar sesión con una cuenta autorizada.</p><div class="row"><input id="folio" placeholder="Ej. MM-XXXXXXXXXXXX"><button id="searchFolio">Consultar</button></div><div id="folioResult"></div></section></main><footer>Mi Municipio · San Juan de los Lagos y Mezquitic de la Magdalena</footer><script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2.57.0/dist/umd/supabase.min.js"></script><script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script><script>
+'use strict';
+const SB_URL='https://weosqhohvstctwdnahac.supabase.co';
+const SB_KEY='sb_publishable__iTS5MK3XJmIylh8h82u4g_C3ioSBq2';
+const db=window.supabase?.createClient(SB_URL,SB_KEY,{auth:{persistSession:true,autoRefreshToken:true}});
+const el=id=>document.getElementById(id);let me=null,profile=null,map=null,marker=null,categories=[];
+function notify(message,error=false){el('message').innerHTML='';const p=document.createElement('p');p.className=error?'error':'success';p.textContent=message;el('message').append(p);window.scrollTo({top:0,behavior:'smooth'});}
+function show(id){for(const x of ['newPanel','reportsPanel','announcementsPanel','mapPanel','statsPanel','adminPanel'])el(x).classList.toggle('hidden',x!==id);if(id==='newPanel')setTimeout(initMap,50)}
+function esc(s){return String(s??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+async function checked(promise){const {data,error}=await promise;if(error)throw error;return data}
+async function refresh(){if(!db){notify('No se pudo cargar la biblioteca de Supabase. Comprueba tu conexión.',true);return}const {data:{user}}=await db.auth.getUser();me=user;el('auth').classList.toggle('hidden',!!me);el('dashboard').classList.toggle('hidden',!me);if(!me){profile=null;return}try{profile=await checked(db.from('profiles').select('role,department').eq('user_id',me.id).maybeSingle());el('welcome').textContent=me.email;el('role').textContent=profile?`${profile.role} · ${profile.department||'Sin dependencia'}`:'Cuenta sin perfil asignado';el('showNew').style.display=profile?.role==='citizen'?'':'none';el('showAdmin').style.display=['municipal_admin','delegation_admin'].includes(profile?.role)?'':'none';categories=await checked(db.from('categories').select('name,department').order('name'));el('category').innerHTML=categories.map(c=>`<option value="${esc(c.name)}">${esc(c.name)}</option>`).join('');await loadReports()}catch(e){notify('No se pudo cargar tu perfil: '+e.message,true)}}
+async function loadReports(){show('reportsPanel');try{const data=await checked(db.from('reports').select('id,folio,category,description,status,created_at,address,latitude,longitude').order('created_at',{ascending:false}).limit(100));el('reportsTitle').textContent=profile?.role==='citizen'?'Mis reportes':'Reportes autorizados';el('reports').innerHTML=data.length?data.map(r=>`<article class="report"><h3>${esc(r.category)} <span class="pill">${esc(r.status)}</span></h3><div class="muted">Folio: ${esc(r.folio)} · ${new Date(r.created_at).toLocaleDateString('es-MX')}</div><p>${esc(r.description)}</p><div class="muted">${esc(r.address||'Sin dirección')}</div><button class='secondary' data-detail='${esc(r.id)}'>Ver detalle</button>${profile?.role!=='citizen'?`<label>Actualizar estado</label><select data-status="${esc(r.id)}"><option value="recibido" ${r.status==='recibido'?'selected':''}>Recibido</option><option value="en_proceso" ${r.status==='en_proceso'?'selected':''}>En proceso</option><option value="resuelto" ${r.status==='resuelto'?'selected':''}>Resuelto</option><option value="cerrado" ${r.status==='cerrado'?'selected':''}>Cerrado</option></select><button data-update="${esc(r.id)}">Guardar estado</button>`:''}</article>`).join(''):'Todavía no hay reportes disponibles.'}catch(e){el('reports').textContent='Error: '+e.message}}
+async function login(){try{await checked(db.auth.signInWithPassword({email:el('email').value.trim(),password:el('password').value}));notify('Sesión iniciada');await refresh()}catch(e){notify(e.message,true)}}
+async function signup(){try{await checked(db.auth.signUp({email:el('email').value.trim(),password:el('password').value}));notify('Registro solicitado. Revisa tu correo para confirmar la cuenta si Supabase lo requiere.')}catch(e){notify(e.message,true)}}
+async function createReport(e){e.preventDefault();if(profile?.role!=='citizen')return notify('Solo las cuentas ciudadanas pueden crear reportes.',true);try{const category=el('category').value;if(!categories.some(c=>c.name===category))throw Error('Categoría no válida');const lat=el('latitude').value,lon=el('longitude').value;if(lat!==''&&lon!==''){const near=await checked(db.rpc('find_nearby_report',{p_category:category,p_lat:Number(lat),p_lon:Number(lon)}));if(near?.length){const d=near[0];if(confirm('Ya existe un reporte de esta situación ('+d.report_folio+'). ¿Deseas sumarte en lugar de crear otro?')){await checked(db.rpc('support_nearby_report',{p_report_id:d.report_id}));notify('Tu apoyo fue agregado al reporte '+d.report_folio);await loadReports();return}}}const report=await checked(db.from('reports').insert({citizen_id:me.id,category,description:el('description').value.trim(),address:el('address').value.trim()||null,latitude:lat===''?null:Number(lat),longitude:lon===''?null:Number(lon)}).select('id,folio').single());await attachFile(report.id);notify('Reporte enviado. Tu folio es '+report.folio);el('reportForm').reset();await loadReports()}catch(e){notify('No se pudo enviar: '+e.message,true)}}
+function initMap(){if(map||!window.L)return;map=L.map('map').setView([21.245,-102.331],12);L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{maxZoom:19,attribution:'© OpenStreetMap'}).addTo(map);map.on('click',e=>setPoint(e.latlng.lat,e.latlng.lng));setTimeout(()=>map.invalidateSize(),100)}
+function setPoint(lat,lon){el('latitude').value=lat.toFixed(6);el('longitude').value=lon.toFixed(6);if(!map)return;if(marker)marker.setLatLng([lat,lon]);else marker=L.marker([lat,lon]).addTo(map);map.setView([lat,lon],Math.max(map.getZoom(),15))}
+async function lookup(){const folio=el('folio').value.trim().toUpperCase();el('folioResult').textContent='';if(!me){el('folioResult').textContent='Inicia sesión para consultar los detalles del reporte.';return}try{const r=await checked(db.from('reports').select('folio,category,status,description').eq('folio',folio).maybeSingle());el('folioResult').textContent=r?`${r.folio} · ${r.category} · ${r.status} · ${r.description}`:'No se encontró un reporte autorizado con ese folio.'}catch(e){notify(e.message,true)}}
+async function announcements(){show('announcementsPanel');try{const data=await checked(db.from('announcements').select('title,body,created_at').order('created_at',{ascending:false}).limit(30));el('announcements').innerHTML=data.length?data.map(a=>`<article class="report"><h3>${esc(a.title)}</h3><p>${esc(a.body)}</p></article>`).join(''):'No hay avisos.'}catch(e){notify(e.message,true)}}
+
+const isAdmin=()=>['municipal_admin','delegation_admin'].includes(profile?.role);
+const isStaff=()=>isAdmin()||profile?.role==='department';
+let cachedReports=[],allMap=null;
+async function attachFile(reportId){
+ const file=el('attachment').files[0];if(!file)return;
+ if(file.size>10*1024*1024)throw Error('El archivo supera los 10 MB');
+ const safe=file.name.replace(/[^a-zA-Z0-9._-]/g,'_').slice(-110);
+ const path=reportId+'/'+crypto.randomUUID()+'-'+safe;
+ await checked(db.storage.from('report-files').upload(path,file,{upsert:false,contentType:file.type||'application/octet-stream'}));
+ await checked(db.from('report_files').insert({report_id:reportId,uploaded_by:me.id,storage_path:path,original_name:file.name,mime_type:file.type||null}));
+}
+async function showDetail(id){
+ try{
+ const report=await checked(db.from('reports').select('*').eq('id',id).single());
+ const notes=await checked(db.from('report_notes').select('*').eq('report_id',id).order('created_at'));
+ const files=await checked(db.from('report_files').select('*').eq('report_id',id));
+ const assigns=await checked(db.from('report_assignments').select('department').eq('report_id',id));
+ const list=await checked(db.from('departments').select('name').order('name'));
+ let html='<h3>'+esc(report.folio)+' · '+esc(report.category)+'</h3><p>'+esc(report.description)+'</p><p class="muted">'+esc(report.address||'')+'</p>';
+ html+='<p><b>Dependencias:</b> '+esc(assigns.map(x=>x.department).join(', ')||'Pendiente de asignación')+'</p>';
+ html+='<h3>Archivos</h3>'+files.map(f=>'<button class="secondary" data-file="'+esc(f.storage_path)+'">'+esc(f.original_name)+'</button>').join('');
+ html+='<h3>Seguimiento interno</h3>'+notes.map(n=>'<div class="note">'+esc(n.body)+'<div class="muted">'+new Date(n.created_at).toLocaleString('es-MX')+'</div></div>').join('');
+ if(isStaff())html+='<textarea id="noteText" placeholder="Escribir nota interna"></textarea><button data-note="'+esc(id)+'">Guardar nota</button><label>Adjuntar documento</label><input type="file" id="detailAttachment"><button data-attach="'+esc(id)+'">Subir archivo</button>';
+ if(isAdmin())html+='<h3>Compartir con dependencias</h3><select id="assignDepartment">'+list.map(d=>'<option>'+esc(d.name)+'</option>').join('')+'</select><button data-assign="'+esc(id)+'">Agregar dependencia</button>';
+ html+='<button class="secondary" data-close-detail="1">Cerrar</button>';
+ el('detailContent').innerHTML=html;if(!el('detailDialog').open)el('detailDialog').showModal();
+ }catch(e){notify(e.message,true)}
+}
+async function renderMap(){
+ show('mapPanel');const data=await checked(db.from('reports').select('id,folio,category,latitude,longitude,status').limit(500));
+ setTimeout(()=>{
+ if(!window.L)return;
+ if(allMap){allMap.remove();allMap=null}
+ allMap=L.map('allMap').setView([21.245,-102.331],12);
+ L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap'}).addTo(allMap);
+ const bounds=[];
+ data.filter(r=>Number.isFinite(r.latitude)&&Number.isFinite(r.longitude)).forEach(r=>{
+ const ll=[r.latitude,r.longitude];bounds.push(ll);
+ L.marker(ll).addTo(allMap).bindPopup(esc(r.folio)+' · '+esc(r.category)+' · '+esc(r.status))
+ });
+ if(bounds.length)allMap.fitBounds(bounds,{padding:[30,30],maxZoom:15});
+ allMap.invalidateSize();
+ },80);
+}
+async function renderStats(){
+ show('statsPanel');
+ const data=await checked(db.from('reports').select('id,status,category,created_at').limit(1000));
+ const count={};data.forEach(r=>count[r.status]=(count[r.status]||0)+1);
+ const cat={};data.forEach(r=>cat[r.category]=(cat[r.category]||0)+1);
+ el('statsContent').innerHTML='<h3>Total: '+data.length+'</h3><h3>Por estado</h3>'+Object.entries(count).map(([k,v])=>'<p>'+esc(k)+': <b>'+v+'</b></p>').join('')+'<h3>Por categoría</h3>'+Object.entries(cat).map(([k,v])=>'<p>'+esc(k)+': <b>'+v+'</b></p>').join('');
+}
+async function renderAdmin(){
+ if(!isAdmin())return;
+ show('adminPanel');
+ const [departments,cats,profiles]=await Promise.all([
+ checked(db.from('departments').select('*').order('name')),
+ checked(db.from('categories').select('*').order('name')),
+ checked(db.from('profiles').select('user_id,role,department').limit(200))
+ ]);
+ el('adminContent').innerHTML='<h3>Dependencias ('+departments.length+')</h3><p>'+departments.map(d=>esc(d.name)).join(' · ')+'</p>'+
+ '<input id="newDept" placeholder="Nueva dependencia"><button data-create-dept="1">Agregar dependencia</button>'+
+ '<h3>Categorías ('+cats.length+')</h3><input id="newCat" placeholder="Nombre de categoría"><select id="catDept">'+departments.map(d=>'<option>'+esc(d.name)+'</option>').join('')+'</select><button data-create-cat="1">Agregar categoría</button>'+
+ '<h3>Perfiles ('+profiles.length+')</h3><p class="muted">Para crear funcionarios se requiere una cuenta registrada en Supabase Auth. No se crean contraseñas desde esta página.</p>'+
+ profiles.map(p=>'<div class="report"><small>'+esc(p.user_id)+'</small> · '+esc(p.role)+' · '+esc(p.department||'')+'</div>').join('');
+}
+async function exportReports(){
+ try{
+ const data=await checked(db.from('reports').select('folio,category,description,status,address,created_at').limit(1000));
+ const fields=['folio','category','description','status','address','created_at'];
+ const csv='\ufeff'+[fields,...data.map(r=>fields.map(f=>r[f]??''))].map(row=>row.map(v=>'"'+String(v).replace(/"/g,'""')+'"').join(',')).join('\r\n');
+ const a=document.createElement('a');a.href=URL.createObjectURL(new Blob([csv],{type:'text/csv;charset=utf-8'}));a.download='MiMunicipio_Reportes.csv';a.click();setTimeout(()=>URL.revokeObjectURL(a.href),5000)
+ }catch(e){notify(e.message,true)}
+}
+document.addEventListener('click',async e=>{
+ const t=e.target,d=t.dataset;
+ try{
+ if(d.detail)await showDetail(d.detail);
+ if(d.closeDetail)el('detailDialog').close();
+ if(d.note){await checked(db.from('report_notes').insert({report_id:d.note,author_id:me.id,body:el('noteText').value.trim()}));await showDetail(d.note)}
+ if(d.assign){await checked(db.from('report_assignments').upsert({report_id:d.assign,department:el('assignDepartment').value,active:true},{onConflict:'report_id,department'}));await showDetail(d.assign)}
+ if(d.file){const {data,error}=await db.storage.from('report-files').createSignedUrl(d.file,90);if(error)throw error;window.open(data.signedUrl,'_blank','noopener')}
+ if(d.attach){const f=el('detailAttachment').files[0];if(!f)return;if(f.size>10*1024*1024)throw Error('Archivo mayor a 10 MB');const path=d.attach+'/'+crypto.randomUUID()+'-'+f.name.replace(/[^a-zA-Z0-9._-]/g,'_');await checked(db.storage.from('report-files').upload(path,f,{contentType:f.type}));await checked(db.from('report_files').insert({report_id:d.attach,uploaded_by:me.id,storage_path:path,original_name:f.name,mime_type:f.type}));await showDetail(d.attach)}
+ if(d.createDept){await checked(db.from('departments').insert({name:el('newDept').value.trim()}));await renderAdmin()}
+ if(d.createCat){await checked(db.from('categories').insert({name:el('newCat').value.trim(),department:el('catDept').value}));await renderAdmin()}
+ }catch(err){notify(err.message,true)}
+});
+el('showMap').onclick=()=>renderMap().catch(e=>notify(e.message,true));
+el('showStats').onclick=()=>renderStats().catch(e=>notify(e.message,true));
+el('showAdmin').onclick=()=>renderAdmin().catch(e=>notify(e.message,true));
+el('exportCsv').onclick=exportReports;
+el('printStats').onclick=()=>window.print();
+
+el('login').onclick=login;el('signup').onclick=signup;el('reset').onclick=async()=>{try{await checked(db.auth.resetPasswordForEmail(el('email').value.trim(),{redirectTo:location.origin+location.pathname}));notify('Si el correo existe, recibirás instrucciones para restablecer tu contraseña.')}catch(e){notify(e.message,true)}};el('logout').onclick=async()=>{await db.auth.signOut();await refresh()};el('showReports').onclick=loadReports;el('showNew').onclick=()=>show('newPanel');el('showAnnouncements').onclick=announcements;el('reportForm').onsubmit=createReport;el('searchFolio').onclick=lookup;el('gps').onclick=()=>navigator.geolocation?.getCurrentPosition(p=>setPoint(p.coords.latitude,p.coords.longitude),e=>notify('No se pudo obtener la ubicación: '+e.message,true),{enableHighAccuracy:true});document.addEventListener('click',async e=>{const id=e.target?.dataset?.update;if(!id)return;try{await checked(db.from('reports').update({status:document.querySelector(`[data-status="${id}"]`).value}).eq('id',id));notify('Estado actualizado');await loadReports()}catch(err){notify(err.message,true)}});if('serviceWorker'in navigator)window.addEventListener('load',()=>navigator.serviceWorker.register('./sw.js').catch(()=>{}));refresh();
+</script></body></html>
